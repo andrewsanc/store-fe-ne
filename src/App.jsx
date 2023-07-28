@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Card from "./components/Card";
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -12,16 +13,18 @@ export default function App() {
         },
       });
 
-      return await response.json();
+      const result = await response.json();
+      setProducts(result.products);
     };
 
-    const products = fetchData();
-    setProducts(products);
+    fetchData();
   }, []);
 
   return (
     <div className='ui container'>
-      <h1>Hello World</h1>
+      <div className='ui cards'>
+        {products && products.map((product) => <Card product={product} />)}
+      </div>
     </div>
   );
 }
