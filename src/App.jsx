@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Card from "./components/Card";
+import Search from "./components/Search";
 import Pagination from "./components/Pagination";
 
 export default function App() {
@@ -7,42 +8,31 @@ export default function App() {
   const [pageNum, setPageNum] = useState(1);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("http://localhost:3000/api/v1/products/", {
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const result = await response.json();
-      setProducts(result.products);
-      setPageNum(result.page);
+    const productData = async () => {
+      const data = await fetchData();
+      setProducts(data.products);
+      setPageNum(data.pageNum);
     };
-
-    fetchData();
+    productData();
   }, []);
+
+  const search = async (e) => {
+    e.preventDefault();
+    const data = await fetchData(`name=${e.target.search.value}`);
+    setProducts(data.products);
+    setPageNum(data.pageNum);
+  };
 
   const getNextPage = async (pageData) => {
     const page = pageData === "prev" ? pageNum - 1 : pageNum + 1;
-
-    const response = await fetch(
-      `http://localhost:3000/api/v1/products/?page=${page}`,
-      {
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const result = await response.json();
-    setProducts(result.products);
-    setPageNum(result.page);
+    const data = await fetchData(`page=${page}`);
+    setProducts(data.products);
+    setPageNum(data.pageNum);
   };
 
   return (
     <div className='ui container'>
+      <Search search={search} />
       <div className='ui cards'>
         {products && products.map((product) => <Card product={product} />)}
       </div>
@@ -53,4 +43,17 @@ export default function App() {
   );
 }
 
-// TODO: Restructure fetch functions
+const fetchData = async (params) => {
+  const response = await fetch(
+    `http://localhost:3000/api/v1/products/?${params}`,
+    {
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const products = await response.json();
+  return products;
+};
